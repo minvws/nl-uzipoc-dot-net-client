@@ -1,0 +1,14 @@
+﻿@page
+@model ProtectedModel
+@{
+    ViewData["Title"] = "Protected";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>This page is protected</p>
+Received uzi data from bridge:<br />
+@Model.UziInformationEncrypted
+<br />
+<br />
+Decrypted using Ura private key:<br />
+@Model.UziInformationDecrypted
