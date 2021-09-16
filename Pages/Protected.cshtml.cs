@@ -23,46 +23,38 @@ namespace UziClientPoc.Pages
     {
         private readonly ILogger<ProtectedModel> _logger;
         private readonly IHttpClientFactory clientFactory;
+        private readonly UziEncryptionService encryptionService;
         private readonly UraOptions uraOptions;
         public string UziInformationEncrypted { get; set; }
         public string UziInformationDecrypted { get; set; }
 
-        public ProtectedModel(ILogger<ProtectedModel> logger, IHttpClientFactory clientFactory, IOptions<UraOptions> options)
+        public ProtectedModel(ILogger<ProtectedModel> logger, IHttpClientFactory clientFactory, IOptions<UraOptions> options, UziEncryptionService encryptionService)
         {
             _logger = logger;
             this.clientFactory = clientFactory;
+            this.encryptionService = encryptionService;
             uraOptions = options.Value;
         }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             var baseUri = "https://inge6:8006";
             var accessToken = await HttpContext.GetTokenAsync("id_token"); // shouldnt this be the access_token?
-
             var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUri}/userinfo?ura_number={uraOptions.UraNumber}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             HttpClient httpClient = clientFactory.CreateClient();
             ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-            var bsnAttr = await httpClient.SendAsync(request);
-            UziInformationEncrypted = await bsnAttr.Content.ReadAsStringAsync();
-            var deserializedUziInformation = JsonConvert.DeserializeObject<Dictionary<string, string>>(UziInformationEncrypted);
-            
-            //// Dit moet nog anders
-            var keyPem = System.IO.File.ReadAllText("Resources/client-certificate.key");
-            var certPem = System.IO.File.ReadAllText("Resources/client-certificate.crt");
+            var bridgeResponse = await httpClient.SendAsync(request);
+            if (!bridgeResponse.IsSuccessStatusCode)
+            {
+                UziInformationDecrypted = await bridgeResponse.Content.ReadAsStringAsync();
+                return Page();
+            }
 
-            var cert = X509Certificate2.CreateFromPemFile("Resources/client-certificate.crt", "Resources/client-certificate.key");
-
-            var bitjes = cert.GetRSAPrivateKey().Decrypt(StringToByteArray(deserializedUziInformation["vUZI"]), RSAEncryptionPadding.OaepSHA1);
-            UziInformationDecrypted = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(System.Text.Encoding.UTF8.GetString(bitjes)));
-        }
-        public static byte[] StringToByteArray(String hex)
-        {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
+            UziInformationEncrypted = await bridgeResponse.Content.ReadAsStringAsync();
+            var deserializedUziInformation = JsonConvert.DeserializeObject<Dictionary<string, string>>(UziInformationEncrypted)!;
+            UziInformationDecrypted = encryptionService.DecryptHex(deserializedUziInformation["vUZI"]);
+            return Page();
         }
     }
 } 

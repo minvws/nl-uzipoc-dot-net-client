@@ -28,10 +28,10 @@ namespace UziClientPoc
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
+            services.AddSingleton<UziEncryptionService>();
             services.Configure<UraOptions>(Configuration.GetSection(UraOptions.Ura));
             services.AddAuthentication(options =>
             {
@@ -53,9 +53,10 @@ namespace UziClientPoc
                 options.Scope.Clear();
                 options.Scope.Add("openid");
             });
-
+            
             services.AddAuthorization();
             services.AddRazorPages();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -82,6 +83,9 @@ namespace UziClientPoc
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
