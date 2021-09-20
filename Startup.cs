@@ -33,6 +33,9 @@ namespace UziClientPoc
             services.AddHttpClient();
             services.AddSingleton<UziEncryptionService>();
             services.Configure<UraOptions>(Configuration.GetSection(UraOptions.Ura));
+            services.Configure<OidcOptions>(Configuration.GetSection(OidcOptions.Oidc));
+            services.Configure<EncryptionOptions>(Configuration.GetSection(EncryptionOptions.Encryption));
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -56,7 +59,6 @@ namespace UziClientPoc
             
             services.AddAuthorization();
             services.AddRazorPages();
-            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

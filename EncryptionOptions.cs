@@ -7,6 +7,7 @@ namespace UziClientPoc
 {
     public record EncryptionOptions
     {
+        public const string Encryption = "Encryption";
         public string KeyPath { get; set; }  = "Resources/client-certificate.key";
         public string CertPath { get; set; } = "Resources/client-certificate.crt";
     }
