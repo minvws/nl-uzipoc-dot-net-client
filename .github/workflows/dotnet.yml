@@ -26,7 +26,6 @@ jobs:
     - name: Archive build results
       uses: actions/upload-artifact@v2
       with:
-        name: dist-without-markdown
+        name: UziClientPoc
         path: |
           publish
-          !publish/issuer.dll.md
