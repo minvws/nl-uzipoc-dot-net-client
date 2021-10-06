@@ -20,6 +20,7 @@ namespace UziClientPoc
 
         public string DecryptHex(string hexString)
         {
+
             certificate ??= X509Certificate2.CreateFromPemFile(encryptionOptions.CertPath, encryptionOptions.KeyPath);
             var bitjes = certificate.GetRSAPrivateKey()!.Decrypt(Convert.FromHexString(hexString), RSAEncryptionPadding.OaepSHA1);
             return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(System.Text.Encoding.UTF8.GetString(bitjes)));

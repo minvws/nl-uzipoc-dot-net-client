@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -26,63 +28,61 @@ namespace UziClientPoc.Pages
         private readonly UziEncryptionService encryptionService;
         private readonly OidcOptions oidcOptions;
         private readonly UraOptions uraOptions;
+        private readonly EncryptionOptions encryptionOptions;
+
         public string UziInformationEncrypted { get; set; }
         public string UziInformationDecrypted { get; set; }
 
-        public ProtectedModel(ILogger<ProtectedModel> logger, IHttpClientFactory clientFactory, IOptions<UraOptions> options, UziEncryptionService encryptionService, IOptions<OidcOptions> oidcOptions)
+        public ProtectedModel(ILogger<ProtectedModel> logger, IHttpClientFactory clientFactory, IOptions<UraOptions> options, UziEncryptionService encryptionService, IOptions<OidcOptions> oidcOptions, IOptions<EncryptionOptions> encryptionOptions)
         {
             _logger = logger;
             this.clientFactory = clientFactory;
             this.encryptionService = encryptionService;
             this.oidcOptions = oidcOptions.Value;
             uraOptions = options.Value;
+            this.encryptionOptions = encryptionOptions.Value;
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var accessToken = await HttpContext.GetTokenAsync("id_token"); // shouldnt this be the access_token?
-            var requestUrl = $"{oidcOptions.Authority}/userinfo?ura_number={uraOptions.UraNumber}";
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            HttpClient httpClient = clientFactory.CreateClient();
-            ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-            var bridgeResponse = await httpClient.SendAsync(request);
-            if (!bridgeResponse.IsSuccessStatusCode)
+            try
             {
-                UziInformationDecrypted = await bridgeResponse.Content.ReadAsStringAsync();
-                return Page();
+                var accessToken = await HttpContext.GetTokenAsync("access_token");
+
+                HttpClient httpClient = clientFactory.CreateClient("userInfo");
+                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+                var requestUrl = $"{oidcOptions.Authority}/userinfo";
+
+                using var bridgeResponse = await httpClient.GetAsync(requestUrl).ConfigureAwait(false);
+
+                if (!bridgeResponse.IsSuccessStatusCode)
+                {
+                    UziInformationDecrypted = await bridgeResponse.Content.ReadAsStringAsync();
+                    await HttpContext.SignOutAsync();
+                    return Redirect("/protected");
+                }
+                UziInformationEncrypted = await bridgeResponse.Content.ReadAsStringAsync();
+
+                var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+                jwtSecurityTokenHandler.ValidateToken(
+                    JsonConvert.DeserializeObject<Dictionary<string, string>>(UziInformationEncrypted)!["vUZI"],
+                    new TokenValidationParameters
+                    {
+                        IssuerSigningKey = new X509SecurityKey(new X509Certificate2("Resources/test.uzipoc.cibg.nl.mTLS.pem")),
+                        ValidateAudience = false,
+                        ValidIssuer = "cibg",
+                        TokenDecryptionKey = new X509SecurityKey(X509Certificate2.CreateFromPemFile(this.encryptionOptions.CertPath, this.encryptionOptions.KeyPath))
+                    },
+                    out SecurityToken securityToken
+                    );
+                this.UziInformationDecrypted = JsonConvert.SerializeObject(((JwtSecurityToken)securityToken).Payload);
+            } catch(Exception e)
+            {
+                _logger.LogError("Whoops:", e);
+                await HttpContext.SignOutAsync();
+                return Redirect("/index");
+            
             }
-
-            UziInformationEncrypted = await bridgeResponse.Content.ReadAsStringAsync();
-            var deserializedUziInformation = JsonConvert.DeserializeObject<Dictionary<string, string>>(UziInformationEncrypted)!;
-            UziInformationDecrypted = encryptionService.DecryptHex(deserializedUziInformation["vUZI"]);
-
-            //requestUrl = $"{oidcOptions.Authority}/bsn_attribute";
-            //request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
-            //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            //bridgeResponse = await httpClient.SendAsync(request);
-            //if (!bridgeResponse.IsSuccessStatusCode)
-            //{
-            //    UziInformationDecrypted = await bridgeResponse.Content.ReadAsStringAsync();
-            //    return Page();
-            //}
-            //UziInformationEncrypted = await bridgeResponse.Content.ReadAsStringAsync();
-
-            //var keyPair = new KeyPair(
-            //    Convert.FromBase64String("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="),
-            //    Convert.FromBase64String("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=")
-            //    );
-
-
-            //var bitjes = SealedPublicKeyBox.Open(Convert.FromBase64String(UziInformationEncrypted), keyPair);
-            //var stringjetje = System.Text.Encoding.UTF8.GetString(bitjes);
-            //SealedPublicKeyBox.Create()
-
-
-
-
-            //var key = "RYlG57yfs8qLOPUwn8OUHJV0t+/i9Lnt9gCIeLAEgoc=";
-            //var message2 = SecretBox.Open(UziInformationEncrypted, "", System.Text.Encoding.UTF8.GetBytes(key));
             return Page();
         }
     }

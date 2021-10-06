@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -45,6 +46,7 @@ namespace UziClientPoc
             .AddOpenIdConnect(options =>
             {
                 var oidcOptions = Configuration.GetSection(OidcOptions.Oidc).Get<OidcOptions>();
+                options.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
                 options.Authority = oidcOptions.Authority;
                 options.ClientId = oidcOptions.ClientId;
 
