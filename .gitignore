@@ -2,3 +2,6 @@ src/bin/*
 src/obj/*
 src/.vs/*
 Resources/*
+*.pem
+*.crt
+*.key

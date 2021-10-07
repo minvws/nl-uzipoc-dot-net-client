@@ -68,7 +68,7 @@ namespace UziClientPoc.Pages
                     JsonConvert.DeserializeObject<Dictionary<string, string>>(UziInformationEncrypted)!["vUZI"],
                     new TokenValidationParameters
                     {
-                        IssuerSigningKey = new X509SecurityKey(new X509Certificate2("Resources/test.uzipoc.cibg.nl.mTLS.pem")),
+                        IssuerSigningKey = new X509SecurityKey(new X509Certificate2(this.encryptionOptions.IssuerSigningKey)),
                         ValidateAudience = false,
                         ValidIssuer = "cibg",
                         TokenDecryptionKey = new X509SecurityKey(X509Certificate2.CreateFromPemFile(this.encryptionOptions.CertPath, this.encryptionOptions.KeyPath))
