@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,11 @@ namespace UziClientPoc
             services.Configure<UraOptions>(Configuration.GetSection(UraOptions.Ura));
             services.Configure<OidcOptions>(Configuration.GetSection(OidcOptions.Oidc));
             services.Configure<EncryptionOptions>(Configuration.GetSection(EncryptionOptions.Encryption));
-
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -65,6 +70,7 @@ namespace UziClientPoc
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseForwardedHeaders();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -74,7 +80,6 @@ namespace UziClientPoc
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
             app.UsePathBase(this.Configuration.GetValue<string>("BasePath"));
             app.UseHttpsRedirection();
             app.UseStaticFiles();
