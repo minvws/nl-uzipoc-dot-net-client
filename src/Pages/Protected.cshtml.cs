@@ -59,7 +59,8 @@ namespace UziClientPoc.Pages
                 {
                     UziInformationDecrypted = await bridgeResponse.Content.ReadAsStringAsync();
                     await HttpContext.SignOutAsync();
-                    return Redirect("/protected");
+                    return Page();
+                    //return Redirect("~/");
                 }
                 UziInformationEncrypted = await bridgeResponse.Content.ReadAsStringAsync();
 
@@ -79,8 +80,8 @@ namespace UziClientPoc.Pages
             } catch(Exception e)
             {
                 _logger.LogError("Whoops:", e);
-                await HttpContext.SignOutAsync();
-                return Redirect("/index");
+                //await HttpContext.SignOutAsync();
+                //return Redirect("/index");
             
             }
             return Page();

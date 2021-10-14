@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -37,11 +39,7 @@ namespace UziClientPoc
             services.Configure<UraOptions>(Configuration.GetSection(UraOptions.Ura));
             services.Configure<OidcOptions>(Configuration.GetSection(OidcOptions.Oidc));
             services.Configure<EncryptionOptions>(Configuration.GetSection(EncryptionOptions.Encryption));
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders =
-                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            });
+            
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -54,7 +52,6 @@ namespace UziClientPoc
                 options.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
                 options.Authority = oidcOptions.Authority;
                 options.ClientId = oidcOptions.ClientId;
-
                 options.SignInScheme = "Cookies";
                 options.RequireHttpsMetadata = false;
                 options.ResponseType = "code";
@@ -70,24 +67,30 @@ namespace UziClientPoc
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseForwardedHeaders();
-            if (env.IsDevelopment())
+            ForwardedHeadersOptions options = new ForwardedHeadersOptions() 
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
+                ForwardedHeaders =
+                    ForwardedHeaders.All
+            };
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+            app.UsePathBase(this.Configuration.GetValue<string>("BasePath"));
+            app.UseForwardedHeaders(options);
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //}
+            //else
+            //{
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
-            }
-            app.UsePathBase(this.Configuration.GetValue<string>("BasePath"));
-            app.UseHttpsRedirection();
+            //}
             app.UseStaticFiles();
 
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
