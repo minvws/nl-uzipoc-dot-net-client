@@ -10,6 +10,6 @@ namespace UziClientPoc
         public const string Encryption = "Encryption";
         public string KeyPath { get; set; }  = "Resources/client-certificate.key";
         public string CertPath { get; set; } = "Resources/client-certificate.crt";
-        public string IssuerSigningKey { get; set; } = "Resources/issuer-signing-key.crt";
+        public IEnumerable<string> IssuerSigningKeys { get; set; } = "Resources/issuer-signing-key.crt".ToEnumerable();
     }
 }

@@ -1,0 +1,15 @@
+﻿@if(Model){
+	<li class="nav-item">
+		<a class="nav-link text-dark" href="/dotnet/Protected">Protected</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link text-dark" href="/dotnet/Account/LogOut">Logout</a>
+	</li>
+} else {
+	<li class="nav-item">
+		<a class="nav-link text-dark" href="/dotnet/Account/LogInWithDigid">LogInWithDigid</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link text-dark" href="/dotnet/Account/LogInWithUziCard">LogInWithUziCard</a>
+	</li>
+}

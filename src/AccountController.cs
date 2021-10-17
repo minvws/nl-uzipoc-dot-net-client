@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,18 @@ namespace UziClientPoc
         public async Task<IActionResult> LogOutAsync()
         {
             await AuthenticationHttpContextExtensions.SignOutAsync(HttpContext);
-            return Redirect("/");
+            return Redirect("/dotnet/");
+        }
+
+        [Authorize(AuthenticationSchemes = "oidc1")]
+        public async Task<IActionResult> LogInWithDigidAsync()
+        {
+            return Redirect("/dotnet/");
+        }
+        [Authorize(AuthenticationSchemes = "oidc2")]
+        public async Task<IActionResult> LogInWithUziCardAsync()
+        {
+            return Redirect("/dotnet/");
         }
     }
 }

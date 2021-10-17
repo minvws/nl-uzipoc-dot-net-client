@@ -35,7 +35,7 @@ namespace UziClientPoc
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
-            services.AddSingleton<UziEncryptionService>();
+            services.AddSingleton<UziCertificateService>();
             services.Configure<UraOptions>(Configuration.GetSection(UraOptions.Ura));
             services.Configure<OidcOptions>(Configuration.GetSection(OidcOptions.Oidc));
             services.Configure<EncryptionOptions>(Configuration.GetSection(EncryptionOptions.Encryption));
@@ -46,7 +46,7 @@ namespace UziClientPoc
                 options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
             .AddCookie()
-            .AddOpenIdConnect(options =>
+            .AddOpenIdConnect("oidc1", options =>
             {
                 var oidcOptions = Configuration.GetSection(OidcOptions.Oidc).Get<OidcOptions>();
                 options.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
@@ -59,8 +59,25 @@ namespace UziClientPoc
                 options.SaveTokens = true;
                 options.Scope.Clear();
                 options.Scope.Add("openid");
+            })
+            .AddOpenIdConnect("oidc2", options =>
+            {
+                var oidcOptions = Configuration.GetSection(OidcOptions.Oidc).Get<OidcOptions>();
+                options.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
+                options.CallbackPath = "/oidc-signin-2";
+                options.Authority = oidcOptions.Authority;
+                options.ClientId = oidcOptions.ClientId;
+                options.SignInScheme = "Cookies";
+                options.RequireHttpsMetadata = false;
+                options.ResponseType = "code";
+                options.UsePkce = true;
+                options.SaveTokens = true;
+                options.Scope.Clear();
+                options.Scope.Add("openid");
+                options.Scope.Add("uzipas");
             });
-            
+
+
             services.AddAuthorization();
             services.AddRazorPages();
         }
@@ -76,15 +93,15 @@ namespace UziClientPoc
             options.KnownProxies.Clear();
             app.UsePathBase(this.Configuration.GetValue<string>("BasePath"));
             app.UseForwardedHeaders(options);
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //}
-            //else
-            //{
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
-            //}
+            }
             app.UseStaticFiles();
 
             app.UseRouting();
