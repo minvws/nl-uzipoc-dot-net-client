@@ -1,0 +1,12 @@
+﻿@page
+@model ProtectedModel
+@{
+    ViewData["Title"] = "Protected";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    @Model.userinfo
+</p>
+
+<a asp-page-handler="Logout">Logout</a>

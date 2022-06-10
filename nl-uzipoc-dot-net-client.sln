@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1700.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nl-uzipoc-dot-net-client", "nl-uzipoc-dot-net-client\nl-uzipoc-dot-net-client.csproj", "{1F0673F2-7986-4954-9BD5-E6BF431D488F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1F0673F2-7986-4954-9BD5-E6BF431D488F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F0673F2-7986-4954-9BD5-E6BF431D488F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F0673F2-7986-4954-9BD5-E6BF431D488F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F0673F2-7986-4954-9BD5-E6BF431D488F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E78E28D0-960C-4CDA-A19B-F04B1B890120}
+	EndGlobalSection
+EndGlobal

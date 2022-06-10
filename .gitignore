@@ -1,7 +1,2 @@
-src/bin/*
-src/obj/*
-src/.vs/*
-Resources/*
-*.pem
-*.crt
-*.key
+.DS_Store
+.vs/
