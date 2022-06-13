@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 25.0.1700.2
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nl-uzipoc-dot-net-client", "nl-uzipoc-dot-net-client\nl-uzipoc-dot-net-client.csproj", "{1F0673F2-7986-4954-9BD5-E6BF431D488F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nl-uzipoc-dot-net-client", "nl-uzipoc-dot-net-client\nl-uzipoc-dot-net-client.csproj", "{1F0673F2-7986-4954-9BD5-E6BF431D488F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{24ABC94A-95F3-4719-9A2A-B3C846FC6F2C}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
