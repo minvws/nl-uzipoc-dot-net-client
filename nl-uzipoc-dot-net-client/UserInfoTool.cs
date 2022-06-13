@@ -14,7 +14,11 @@ namespace nl_uzipoc_dot_net_client
 {
 	public class UserInfoTool
 	{
-		public static async Task FetchUserInfoOnTokenResponseReceived(TokenResponseReceivedContext tokenResponseReceivedContext)
+		public static async Task FetchUserInfoOnTokenResponseReceived(
+			TokenResponseReceivedContext tokenResponseReceivedContext,
+			string clientKeyPath,
+			string clientCertPath
+			)
         {
 			var configuration = await tokenResponseReceivedContext.Options.ConfigurationManager.GetConfigurationAsync(CancellationToken.None);
 			var jwksRequestMessage = new HttpRequestMessage(HttpMethod.Get, configuration.JwksUri);
@@ -31,8 +35,8 @@ namespace nl_uzipoc_dot_net_client
 			var jwe = await response.Content.ReadAsStringAsync();
 			var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 			var clientPrivateKey = new X509SecurityKey(X509Certificate2.CreateFromPemFile(
-				"Resources/client.cert",
-				"Resources/client.key"
+				clientCertPath,
+				clientKeyPath
 				));
 
 			jwtSecurityTokenHandler.ValidateToken(jwe, new TokenValidationParameters

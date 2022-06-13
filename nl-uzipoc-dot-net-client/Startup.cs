@@ -25,6 +25,8 @@ namespace nl_uzipoc_dot_net_client
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var oidcConfiguration = Configuration.GetSection("Oidc").Get<OidcConfiguration>();
+
             services.AddRazorPages(options =>
             {
                 options.Conventions.AllowAnonymousToPage("/Index");
@@ -53,18 +55,16 @@ namespace nl_uzipoc_dot_net_client
                     };
                     options.Scope.Clear();
                     options.Scope.Add("openid");
-                    Console.WriteLine("HIer!!");
-                    Console.WriteLine(options.Scope);
-                    //options.RequireHttpsMetadata = false;
-                    options.Authority = "https://inge_6_uzipoc:8006";
-                    options.ClientId = "nl_uzipoc_dot_net";
+                    options.Authority = oidcConfiguration.Authority ;
+                    options.ClientId = oidcConfiguration.ClientId;
                     options.ResponseType = "code";
                     options.ResponseMode = "form_post";
                     options.UsePkce = true;
                     options.GetClaimsFromUserInfoEndpoint = false;
                     options.Events = new OpenIdConnectEvents
                     {
-                        OnTokenResponseReceived = UserInfoTool.FetchUserInfoOnTokenResponseReceived                        
+                        OnTokenResponseReceived = context => UserInfoTool.FetchUserInfoOnTokenResponseReceived(
+                            context, oidcConfiguration.ClientKeyPath, oidcConfiguration.ClientCertPath)                       
                     };
                     
                 });
