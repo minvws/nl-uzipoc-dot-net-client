@@ -1,4 +1,4 @@
-# Uzipoc .NET 6 client example
+# UziPoc .NET 6 client example
 
 This client provides an example how to connect to the https://github.com/minvws/nl-uzipoc-max OIDC service.
 
